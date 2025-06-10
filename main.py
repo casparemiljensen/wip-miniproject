@@ -13,6 +13,7 @@ import numpy as np
 import evaluate
 import torch
 from collections import Counter
+import pickle
 
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
@@ -71,7 +72,7 @@ def encode_labels_and_split_data(processed_data):
     encoded_labels = label_encoder.fit_transform(filtered_labels)
 
     for i, item in enumerate(filtered_data):
-        item["label_id"] = int(encoded_labels[i])
+        item["label"] = int(encoded_labels[i])
 
     train_data, val_data = train_test_split(
         filtered_data,
@@ -93,8 +94,8 @@ def prepare_dataset_dict(train_data, val_data, tokenizer):
         return tokenizer(example["input"], padding="max_length", truncation=True)
 
     dataset = dataset.map(tokenize_function, batched=True)
-    dataset = dataset.remove_columns(["input", "label"])
-    dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "label_id"])
+    dataset = dataset.remove_columns(["input"])
+    dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
     return dataset
 
 
@@ -120,7 +121,6 @@ def generate_model_input(data):
 
     names = entities["vars"]
 
-
     for t in data["results"].get("bindings"):
         dict_entry = {}
 
@@ -142,9 +142,6 @@ def generate_model_input(data):
         dict_entry['label'] = genre
 
         processed.append(dict_entry)
-
-        # processed.append(f"{abstract} {genre_triple} {directors_triple}")
-
 
     return processed
 
@@ -181,7 +178,7 @@ try:
 
     training_args = TrainingArguments(
         output_dir="./bert_genre_model",
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-5,
         per_device_train_batch_size=4,
@@ -205,6 +202,11 @@ try:
     print("Finetuning BERT on film genres...")
     trainer.train()
     print("Done training.")
+
+    with open("label_encoder.pkl", "wb") as f:
+        pickle.dump(label_encoder, f)
+
+    print("Label encoder saved as label_encoder.pkl")
 
     eval_results = trainer.evaluate()
     print("Evaluation results:", eval_results)

@@ -6,3 +6,4 @@ pandas
 accelerate
 datasets
 evaluate
+protobuf
