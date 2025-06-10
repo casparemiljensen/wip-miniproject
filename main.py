@@ -42,15 +42,15 @@ sparql.setReturnFormat(JSON)
 print("Executing SPARQL query... This might take a moment.")
 
 
-def generateModelInput(input):
+def generate_model_input(data):
     processed = []
 
-    entities = input["head"]
+    entities = data["head"]
 
     names = entities["vars"]
 
 
-    for t in input["results"].get("bindings"):
+    for t in data["results"].get("bindings"):
         dict_entry = {}
 
         title = t[names[0]].__getitem__("value")
@@ -94,9 +94,9 @@ try:
     # }
 
     print("Query executed successfully. Processing results...")
-    input = generateModelInput(results)
+    model_input = generate_model_input(results)
 
-    for t in input:
+    for t in model_input:
         print(t)
 
 except Exception as e:
