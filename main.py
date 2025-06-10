@@ -11,7 +11,6 @@ from sklearn.preprocessing import LabelEncoder
 from datasets import Dataset, DatasetDict
 import numpy as np
 import evaluate
-import torch
 from collections import Counter
 import pickle
 
@@ -47,8 +46,9 @@ WHERE {
     ?director rdfs:label ?directorLabel .
     FILTER (lang(?directorLabel) = "en")
 }
+ORDER BY RAND()
  
-LIMIT 50
+LIMIT 1000
 
 """
 
@@ -129,14 +129,12 @@ def generate_model_input(data):
         directors = t[names[2]].__getitem__("value")
         genres = t[names[3]].__getitem__("value")
 
-        # We take only first of genre and director
         genre = genres.split(', ')[0].strip()
         director = directors.split(', ')[0].strip()
 
         genre_triple = f"{title} → genre → {genre} . "
         directors_triple = f"{title} → director → {director} . "
 
-        # You'll want a list where each item in the list is a dictionary with two keys:
 
         dict_entry['input'] = f"{abstract} {genre_triple} {directors_triple}"
         dict_entry['label'] = genre
@@ -181,8 +179,8 @@ try:
         eval_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-5,
-        per_device_train_batch_size=4,
-        per_device_eval_batch_size=4,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
         num_train_epochs=5,
         weight_decay=0.01,
         logging_dir="./logs",
