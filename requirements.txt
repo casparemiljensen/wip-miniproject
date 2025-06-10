@@ -1,1 +1,8 @@
 SPARQLWrapper
+transformers
+torch
+scikit-learn
+pandas
+accelerate
+datasets
+evaluate
