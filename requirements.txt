@@ -1,1 +1,4 @@
 SPARQLWrapper
+torch
+transformers
+scikit-learn
