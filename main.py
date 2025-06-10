@@ -1,5 +1,9 @@
-from SPARQLWrapper import SPARQLWrapper, JSON
+import numpy as np
+import evaluate
+import pickle
+import torch
 
+from SPARQLWrapper import SPARQLWrapper, JSON
 from transformers import (
     BertTokenizer,
     BertForSequenceClassification,
@@ -9,14 +13,10 @@ from transformers import (
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from datasets import Dataset, DatasetDict
-import numpy as np
-import evaluate
 from collections import Counter
-import pickle
 
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
-
 
 sparql_query = """
 PREFIX dbo: <http://dbpedia.org/ontology/>
@@ -47,8 +47,7 @@ WHERE {
     FILTER (lang(?directorLabel) = "en")
 }
 ORDER BY RAND()
- 
-LIMIT 1000
+LIMIT 250
 
 """
 
@@ -179,8 +178,8 @@ try:
         eval_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-5,
-        per_device_train_batch_size=16,
-        per_device_eval_batch_size=16,
+        per_device_train_batch_size=8,
+        per_device_eval_batch_size=8,
         num_train_epochs=5,
         weight_decay=0.01,
         logging_dir="./logs",
